@@ -563,7 +563,6 @@ impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
 
 mod datetime {
     pub const FIELD: &str = "$__toml_private_datetime";
-    pub const NAME: &str = "$__toml_private_Datetime";
 }
 
 impl<'de> de::Visitor<'de> for DatetimeOrTable {
