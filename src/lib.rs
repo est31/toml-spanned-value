@@ -1,3 +1,6 @@
+mod spanned_value;
+mod map;
+
 #[cfg(test)]
 mod tests {
     #[test]
