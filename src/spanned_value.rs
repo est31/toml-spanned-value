@@ -8,8 +8,7 @@ use std::str::FromStr;
 use serde::de;
 use serde::ser;
 
-use crate::datetime::{self, DatetimeFromString};
-pub use crate::datetime::{Datetime, DatetimeParseError};
+pub use toml::value::{Datetime, DatetimeParseError};
 use crate::spanned::{self, Spanned};
 
 pub use crate::map::Map;
@@ -354,16 +353,16 @@ where
 
 impl fmt::Display for ValueKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::ser::to_string(self)
+        toml::ser::to_string(self)
             .expect("Unable to represent value as string")
             .fmt(f)
     }
 }
 
 impl FromStr for ValueKind {
-    type Err = crate::de::Error;
+    type Err = toml::de::Error;
     fn from_str(s: &str) -> Result<ValueKind, Self::Err> {
-        crate::from_str(s)
+        toml::from_str(s)
     }
 }
 
@@ -515,6 +514,39 @@ impl<'de> de::Deserialize<'de> for ValueKind {
     }
 }
 
+struct DatetimeFromString {
+    pub value: Datetime,
+}
+
+impl<'de> de::Deserialize<'de> for DatetimeFromString {
+    fn deserialize<D>(deserializer: D) -> Result<DatetimeFromString, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        struct Visitor;
+
+        impl<'de> de::Visitor<'de> for Visitor {
+            type Value = DatetimeFromString;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("string containing a datetime")
+            }
+
+            fn visit_str<E>(self, s: &str) -> Result<DatetimeFromString, E>
+            where
+                E: de::Error,
+            {
+                match s.parse() {
+                    Ok(date) => Ok(DatetimeFromString { value: date }),
+                    Err(e) => Err(de::Error::custom(e)),
+                }
+            }
+        }
+
+        deserializer.deserialize_str(Visitor)
+    }
+}
+
 struct DatetimeOrTable;
 
 impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
@@ -527,6 +559,11 @@ impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
         static FIELDS: [&str; 3] = [spanned::START, spanned::END, spanned::VALUE];
         deserializer.deserialize_struct(spanned::NAME, &FIELDS, self)
     }
+}
+
+mod datetime {
+    pub const FIELD: &str = "$__toml_private_datetime";
+    pub const NAME: &str = "$__toml_private_Datetime";
 }
 
 impl<'de> de::Visitor<'de> for DatetimeOrTable {
