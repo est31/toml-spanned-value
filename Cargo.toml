@@ -9,4 +9,8 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = "1.0"
-toml = { git = "https://github.com/alexcrichton/toml-rs" }
+#toml = { git = "https://github.com/alexcrichton/toml-rs" }
+toml = { git = "https://github.com/est31/toml-rs", branch = "spanned_crate_mvp_1" }
+
+[dev-dependencies]
+serde_derive = "1.0"

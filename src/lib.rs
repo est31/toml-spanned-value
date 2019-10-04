@@ -1,4 +1,4 @@
-mod spanned_value;
+pub mod spanned_value;
 mod spanned;
 mod map;
 
