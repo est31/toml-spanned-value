@@ -4,10 +4,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
-pub(crate) const NAME: &str = "$__toml_private_Spanned";
-pub(crate) const START: &str = "$__toml_private_start";
-pub(crate) const END: &str = "$__toml_private_end";
-pub(crate) const VALUE: &str = "$__toml_private_value";
+use toml::spanned::{NAME, START, END, VALUE};
 
 /// A spanned value, indicating the range at which it is defined in the source.
 ///

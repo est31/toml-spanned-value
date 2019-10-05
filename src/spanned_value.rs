@@ -556,13 +556,9 @@ impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
     where
         D: de::Deserializer<'de>,
     {
-        static FIELDS: [&str; 3] = [spanned::START, spanned::END, spanned::VALUE];
-        deserializer.deserialize_struct(spanned::NAME, &FIELDS, self)
+        static FIELDS: [&str; 3] = [toml::spanned::START, toml::spanned::END, toml::spanned::VALUE];
+        deserializer.deserialize_struct(toml::spanned::NAME, &FIELDS, self)
     }
-}
-
-mod datetime {
-    pub const FIELD: &str = "$__toml_private_datetime";
 }
 
 impl<'de> de::Visitor<'de> for DatetimeOrTable {
@@ -585,7 +581,7 @@ impl<'de> de::Visitor<'de> for DatetimeOrTable {
     where
         E: de::Error,
     {
-        assert_eq!(s, datetime::FIELD);
+        assert_eq!(s, toml::datetime::FIELD);
         Ok(None)
     }
 
@@ -593,7 +589,7 @@ impl<'de> de::Visitor<'de> for DatetimeOrTable {
     where
         E: de::Error,
     {
-        assert_eq!(s, datetime::FIELD);
+        assert_eq!(s, toml::datetime::FIELD);
         Ok(None)
     }
 }
