@@ -1,0 +1,47 @@
+name: cpal
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Run without features
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --no-default-features --verbose
+    - name: Run all features
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --all-features --verbose
+
+  windows-test:
+
+    strategy:
+      matrix:
+        version: [x86_64, i686]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.version }}-pc-windows-msvc
+        override: true
+    - name: Run without features
+      run: cargo test --all --no-default-features --verbose
+    - name: Run all features
+      run: cargo test --all --all-features --verbose
