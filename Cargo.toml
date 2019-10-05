@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = "1.0"
+linked-hash-map = { version = "0.5", optional = true }
 #toml = { git = "https://github.com/alexcrichton/toml-rs" }
 toml = { git = "https://github.com/est31/toml-rs", branch = "spanned_crate_mvp_1" }
 
