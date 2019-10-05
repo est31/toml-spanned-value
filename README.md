@@ -2,7 +2,7 @@
 
 [![dependency status](https://deps.rs/repo/github/est31/toml-spanned-value/status.svg)](https://deps.rs/repo/github/est31/toml-spanned-value)
 
-Adds a `SpannedValue` to the [toml](https://github.com/alexcrichton/toml-rs) crate. Spans provide location information to allow for good error messages or other purposes.
+The [toml](https://github.com/alexcrichton/toml-rs) crate provides users with a `Value` type that can be used for custom parsing logic. However, this type doesn't support span information. Spans provide location information to allow for good error messages or other purposes. The `toml-spanned-value` crate provides a `SpannedValue` type to fix this.
 
 ### License
 [license]: #license
