@@ -19,3 +19,8 @@ toml = { git = "https://github.com/est31/toml-rs", branch = "spanned_crate_mvp_2
 
 [dev-dependencies]
 serde_derive = "1.0"
+
+[features]
+default = []
+# Analogous to the preserve_order feature of toml-rs
+preserve_order = ["linked-hash-map"]
