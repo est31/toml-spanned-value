@@ -547,6 +547,59 @@ impl<'de> de::Deserialize<'de> for DatetimeFromString {
     }
 }
 
+#[derive(Debug)]
+struct OptError<E: de::Error>(Option<E>);
+
+impl<E: de::Error> std::error::Error for OptError<E> {}
+
+impl<E: de::Error> core::fmt::Display for OptError<E> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        // The error is never meant to be displayed.
+        // Our code is expected to unwrap the error before
+        // it is propagated to places that may display it.
+        unreachable!()
+    }
+}
+
+impl<E: de::Error> de::Error for OptError<E> {
+    fn custom<T: core::fmt::Display>(msg: T) -> Self {
+        Self(Some(<E as de::Error>::custom(msg)))
+    }
+}
+
+struct LayerDeserializer<'de, D: de::Deserializer<'de>>(D, std::marker::PhantomData<&'de()>);
+
+impl<'de, D: de::Deserializer<'de>> de::Deserializer<'de> for LayerDeserializer<'de, D> {
+    type Error = OptError<D::Error>;
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>
+    {
+        self.0.deserialize_any(visitor).map_err(|e| OptError(Some(e)))
+    }
+    fn deserialize_struct<V>(
+        self,
+        name: &'static str,
+        fields: &'static [&'static str],
+        visitor: V
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>
+    {
+        let wrapped_visitor = DatetimeOrTableWrapper(visitor);
+        match self.0.deserialize_struct(name, fields, wrapped_visitor) {
+            Ok(Some(v)) => Ok(v),
+            Ok(None) => Err(OptError(None)),
+            Err(v) => Err(OptError(Some(v))),
+        }
+    }
+    serde::forward_to_deserialize_any! {
+        bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+        bytes byte_buf option unit unit_struct newtype_struct seq tuple
+        tuple_struct map enum identifier ignored_any
+    }
+}
+
 struct DatetimeOrTable;
 
 impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
@@ -556,24 +609,30 @@ impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable {
     where
         D: de::Deserializer<'de>,
     {
-        static FIELDS: [&str; 3] = [toml::spanned::START, toml::spanned::END, toml::spanned::VALUE];
-        deserializer.deserialize_struct(toml::spanned::NAME, &FIELDS, self)
+        let deserializer = LayerDeserializer(deserializer, std::marker::PhantomData);
+        let res = <Spanned::<String> as de::Deserialize<'_>>::deserialize(deserializer);
+        match res {
+            Ok(v) => Ok(Some(v)),
+            Err(OptError(None)) => Ok(None),
+            Err(OptError(Some(e))) => Err(e),
+        }
     }
 }
 
-impl<'de> de::Visitor<'de> for DatetimeOrTable {
-    type Value = Option<Spanned<String>>;
+struct DatetimeOrTableWrapper<V>(V);
+
+impl<'de, V: de::Visitor<'de>> de::Visitor<'de> for DatetimeOrTableWrapper<V> {
+    type Value = Option<V::Value>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("a string key")
     }
 
-    fn visit_map<V>(self, visitor: V) -> Result<Self::Value, V::Error>
+    fn visit_map<W>(self, visitor: W) -> Result<Self::Value, W::Error>
     where
-        V: de::MapAccess<'de>,
+        W: de::MapAccess<'de>,
     {
-        let spanned_visitor = spanned::SpannedVisitor(::std::marker::PhantomData);
-        let key = spanned_visitor.visit_map(visitor)?;
+        let key = self.0.visit_map(visitor)?;
         Ok(Some(key))
     }
 
@@ -581,7 +640,7 @@ impl<'de> de::Visitor<'de> for DatetimeOrTable {
     where
         E: de::Error,
     {
-        assert_eq!(s, toml::datetime::FIELD);
+        //assert_eq!(s, toml::datetime::FIELD);
         Ok(None)
     }
 
@@ -589,7 +648,7 @@ impl<'de> de::Visitor<'de> for DatetimeOrTable {
     where
         E: de::Error,
     {
-        assert_eq!(s, toml::datetime::FIELD);
+        //assert_eq!(s, toml::datetime::FIELD);
         Ok(None)
     }
 }
