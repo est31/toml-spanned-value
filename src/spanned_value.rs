@@ -9,7 +9,7 @@ use serde::de;
 use serde::ser;
 
 pub use toml::value::{Datetime, DatetimeParseError};
-use crate::spanned::{self, Spanned};
+use crate::spanned::Spanned;
 
 pub use crate::map::Map;
 
@@ -553,7 +553,7 @@ struct OptError<E: de::Error>(Option<E>);
 impl<E: de::Error> std::error::Error for OptError<E> {}
 
 impl<E: de::Error> core::fmt::Display for OptError<E> {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, _fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         // The error is never meant to be displayed.
         // Our code is expected to unwrap the error before
         // it is propagated to places that may display it.
@@ -636,7 +636,7 @@ impl<'de, V: de::Visitor<'de>> de::Visitor<'de> for DatetimeOrTableWrapper<V> {
         Ok(Some(key))
     }
 
-    fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+    fn visit_str<E>(self, _s: &str) -> Result<Self::Value, E>
     where
         E: de::Error,
     {
@@ -644,7 +644,7 @@ impl<'de, V: de::Visitor<'de>> de::Visitor<'de> for DatetimeOrTableWrapper<V> {
         Ok(None)
     }
 
-    fn visit_string<E>(self, s: String) -> Result<Self::Value, E>
+    fn visit_string<E>(self, _s: String) -> Result<Self::Value, E>
     where
         E: de::Error,
     {
