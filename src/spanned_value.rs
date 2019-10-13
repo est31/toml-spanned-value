@@ -9,7 +9,7 @@ use serde::de;
 use serde::ser;
 
 pub use toml::value::{Datetime, DatetimeParseError};
-use crate::spanned::Spanned;
+use toml::Spanned;
 
 pub use crate::map::Map;
 
