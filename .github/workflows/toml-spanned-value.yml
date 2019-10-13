@@ -1,4 +1,4 @@
-name: cpal
+name: toml-spanned-value
 
 on: [push, pull_request]
 
