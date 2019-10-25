@@ -9,10 +9,10 @@
 //! A map of a key to a value.
 //!
 //! By default the map is backed by a [`BTreeMap`]. Enable the `preserve_order`
-//! feature of toml-rs to use [`LinkedHashMap`] instead.
+//! feature of toml-rs to use [`IndexMap`] instead.
 //!
 //! [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
-//! [`LinkedHashMap`]: https://docs.rs/linked-hash-map/*/linked_hash_map/struct.LinkedHashMap.html
+//! [`IndexMap`]: https://docs.rs/indexmap/*/map/struct.IndexMap.html
 
 use serde::{de, ser};
 use std::borrow::Borrow;
@@ -26,7 +26,7 @@ use std::ops;
 use std::collections::{btree_map, BTreeMap};
 
 #[cfg(feature = "preserve_order")]
-use linked_hash_map::{self, LinkedHashMap};
+use indexmap::{self, IndexMap};
 
 /// Represents a JSON key/value type.
 #[derive(Clone, PartialEq)]
@@ -37,7 +37,7 @@ pub struct Map<K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type MapImpl<K, V> = BTreeMap<K, V>;
 #[cfg(feature = "preserve_order")]
-type MapImpl<K, V> = LinkedHashMap<K, V>;
+type MapImpl<K, V> = IndexMap<K, V>;
 
 impl<K: Ord + Hash, V> Map<K, V> {
     /// Makes a new empty Map.
@@ -64,7 +64,7 @@ impl<K: Ord + Hash, V> Map<K, V> {
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Map {
-            map: LinkedHashMap::with_capacity(capacity),
+            map: IndexMap::with_capacity(capacity),
         }
     }
 
@@ -146,7 +146,7 @@ impl<K: Ord + Hash, V> Map<K, V> {
         S: Into<K>,
     {
         #[cfg(feature = "preserve_order")]
-        use linked_hash_map::Entry as EntryImpl;
+        use indexmap::map::Entry as EntryImpl;
         #[cfg(not(feature = "preserve_order"))]
         use std::collections::btree_map::Entry as EntryImpl;
 
@@ -390,12 +390,12 @@ pub struct OccupiedEntry<'a, K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type VacantEntryImpl<'a, K, V> = btree_map::VacantEntry<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type VacantEntryImpl<'a, K, V> = linked_hash_map::VacantEntry<'a, K, V>;
+type VacantEntryImpl<'a, K, V> = indexmap::map::VacantEntry<'a, K, V>;
 
 #[cfg(not(feature = "preserve_order"))]
 type OccupiedEntryImpl<'a, K, V> = btree_map::OccupiedEntry<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type OccupiedEntryImpl<'a, K, V> = linked_hash_map::OccupiedEntry<'a, K, V>;
+type OccupiedEntryImpl<'a, K, V> = indexmap::map::OccupiedEntry<'a, K, V>;
 
 impl<'a, K: Ord + Hash, V> Entry<'a, K, V> {
     /// Returns a reference to this entry's key.
@@ -505,7 +505,7 @@ pub struct Iter<'a, K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type IterImpl<'a, K, V> = btree_map::Iter<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type IterImpl<'a, K, V> = linked_hash_map::Iter<'a, K, V>;
+type IterImpl<'a, K, V> = indexmap::map::Iter<'a, K, V>;
 
 delegate_iterator!((Iter['a, K: Ord + Hash, V], <'a, K, V>) => (&'a K, &'a V));
 
@@ -530,7 +530,7 @@ pub struct IterMut<'a, K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type IterMutImpl<'a, K, V> = btree_map::IterMut<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type IterMutImpl<'a, K, V> = linked_hash_map::IterMut<'a, K, V>;
+type IterMutImpl<'a, K, V> = indexmap::map::IterMut<'a, K, V>;
 
 delegate_iterator!((IterMut['a, K: Ord + Hash, V], <'a, K, V>) => (&'a K, &'a mut V));
 
@@ -555,7 +555,7 @@ pub struct IntoIter<K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type IntoIterImpl<K, V> = btree_map::IntoIter<K, V>;
 #[cfg(feature = "preserve_order")]
-type IntoIterImpl<K, V> = linked_hash_map::IntoIter<K, V>;
+type IntoIterImpl<K, V> = indexmap::map::IntoIter<K, V>;
 
 delegate_iterator!((IntoIter[K: Ord + Hash, V], <K, V>) => (K, V));
 
@@ -569,7 +569,7 @@ pub struct Keys<'a, K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type KeysImpl<'a, K, V> = btree_map::Keys<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type KeysImpl<'a, K, V> = linked_hash_map::Keys<'a, K, V>;
+type KeysImpl<'a, K, V> = indexmap::map::Keys<'a, K, V>;
 
 delegate_iterator!((Keys['a, K: Ord + Hash, V], <'a, K, V>) => &'a K);
 
@@ -583,6 +583,6 @@ pub struct Values<'a, K: Ord + Hash, V> {
 #[cfg(not(feature = "preserve_order"))]
 type ValuesImpl<'a, K, V> = btree_map::Values<'a, K, V>;
 #[cfg(feature = "preserve_order")]
-type ValuesImpl<'a, K, V> = linked_hash_map::Values<'a, K, V>;
+type ValuesImpl<'a, K, V> = indexmap::map::Values<'a, K, V>;
 
 delegate_iterator!((Values['a, K: Ord + Hash, V], <'a, K, V>) => &'a V);
