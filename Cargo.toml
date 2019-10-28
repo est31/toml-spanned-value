@@ -13,7 +13,7 @@ readme = "README.md"
 [dependencies]
 serde = "1.0"
 indexmap = { version = "1.3", optional = true }
-toml = { git = "https://github.com/alexcrichton/toml-rs" }
+toml = "0.5.4"
 #toml = { path = "../toml-rs" }
 
 [dev-dependencies]
